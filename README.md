@@ -1,8 +1,5 @@
 # bcg
 
-[![Go Report](https://goreportcard.com/badge/github.com/natesales/bcg?style=for-the-badge)](https://goreportcard.com/report/github.com/natesales/bcg)
-[![License](https://img.shields.io/github/license/natesales/bcg?style=for-the-badge)](https://choosealicense.com/licenses/gpl-3.0/)
-[![Release](https://img.shields.io/github/v/release/natesales/bcg?style=for-the-badge)](https://github.com/natesales/bcg/releases)
 
 The automatic BIRD configuration generator with bogon, IRR, RPKI, and max prefix filtering support.
 
@@ -16,6 +13,14 @@ also build from source by cloning the repo and running `go build`. It's recommen
 IRR prefix lists and PeeringDB prefix limits. Adding `0 */12 * * * /usr/bin/bcg` to your crontab will update the filters
 at 12 AM and PM. If you're using ZSH you might also be interested in
 my [birdc completion](https://github.com/natesales/zsh-bird-completions).
+
+### Why the fork ?
+
+The original project from [Natan Sales](https://github.com/natesales/) was missing a few options that I actually use in my BIRD routers, thats why I decide to fork and added those features.
+
+- Peer type for `core routers` for better iBGP routing distribution (peerType = core).
+- I'm using OSPF for loopback distribution.
+- VRF Support, at least at Kernel Level since BIRD cant interact with routing table from birdc (`coming soon`).
 
 #### Configuration
 
@@ -123,6 +128,7 @@ path ([Peerlock Lite](https://github.com/job/peerlock)).
 
 | Large     | Meaning                   |
 |-----------|---------------------------|
+| ASN,0,10  | Learned from CORE routers via iBGP |
 | ASN,0,100 | Originated                |
 | ASN,0,101 | Learned from upstream     |
 | ASN,0,102 | Learned from peer         |
@@ -155,7 +161,7 @@ path ([Peerlock Lite](https://github.com/job/peerlock)).
 | Option         | Usage                                                                                                     |
 | -------------- | --------------------------------------------------------------------------------------------------------- |
 | asn            | Neighbor ASN                                                                                              |
-| type           | Type of peer (upstream, peer, downstream, import-valid)                                                   |
+| type           | Type of peer (core, upstream, peer, downstream, import-valid)                                                   |
 | local-pref     | BGP LOCAL_PREF                                                                                            |
 | disabled       | Should neighbor sessions be disabled?                                                                     |
 | passive        | Should neighbor sessions listen passively for BGP TCP connections?                                        |

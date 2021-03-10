@@ -500,8 +500,8 @@ func main() {
 		log.Infof("Checking config for %s AS%d", peerName, peerData.Asn)
 
 		// Validate peer type
-		if !(peerData.Type == "upstream" || peerData.Type == "peer" || peerData.Type == "downstream" || peerData.Type == "import-valid") {
-			log.Fatalf("[%s] type attribute is invalid. Must be upstream, peer, downstream, or import-valid", peerName)
+		if !(peerData.Type == "core" || peerData.Type == "upstream" || peerData.Type == "peer" || peerData.Type == "downstream" || peerData.Type == "import-valid") {
+			log.Fatalf("[%s] type attribute is invalid. Must be core, upstream, peer, downstream, or import-valid", peerName)
 		}
 
 		log.Infof("[%s] type: %s", peerName, peerData.Type)
@@ -551,7 +551,7 @@ func main() {
 
 			// Update the "latest operation" timestamp
 			peerData.QueryTime = time.Now().Format(DefaultTimeFormat)
-		} else if peerData.Type == "upstream" || peerData.Type == "import-valid" {
+		} else if peerData.Type == "core" || peerData.Type == "upstream" || peerData.Type == "import-valid" {
 			// Check for a zero prefix import limit
 			if peerData.ImportLimit4 == 0 {
 				peerData.ImportLimit4 = DefaultIPv4TableSize

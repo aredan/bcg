@@ -48,7 +48,7 @@ timeformat log iso long;
 timeformat protocol iso long;
 timeformat route iso long;
 
-log syslog all;
+#log syslog all;
 
 protocol device {};
 
@@ -139,7 +139,7 @@ protocol rpki {
 # Prefix and ASN lists are adapted from https://github.com/neptune-networks/peering/blob/master/templates/bird.conf.erb and https://github.com/NLNOG/bgpfilterguide, check out those repos too!
 
 define TRANSIT_ASNS = [
-  174,                    # Cogent
+#  174,                    # Cogent (BuyVM exposes this into downstream peers)
 #  209,                    # Qwest (HE carries this on IXPs IPv6 (Jul 12 2018))
   701,                    # UUNET
   702,                    # UUNET
@@ -164,11 +164,11 @@ define TRANSIT_ASNS = [
 define BOGONS_v4 = [
   {{ if .FilterDefault -}}0.0.0.0/0,              # Default route{{ end }}
   0.0.0.0/8{8,32},        # IANA - Local Identification
-  10.0.0.0/8{8,32},       # RFC 1918 - Private Use
+#  10.0.0.0/8{8,32},       # RFC 1918 - Private Use (aaNetworks uses this internally and inject them into routing table)
   100.64.0.0/10{10,32},   # RFC 6598 - Shared Address Space
   127.0.0.0/8{8,32},      # IANA - Loopback
   169.254.0.0/16{16,32},  # RFC 3927 - Link Local
-  172.16.0.0/12{12,32},   # RFC 1918 - Private Use
+#  172.16.0.0/12{12,32},   # RFC 1918 - Private Use (aaNetworks uses this internally and inject them into routing table)
   192.0.2.0/24{24,32},    # RFC 5737 - TEST-NET-1
   192.88.99.0/24{24,32},  # RFC 3068 - 6to4 prefix
   192.168.0.0/16{16,32},  # RFC 1918 - Private Use
@@ -307,7 +307,19 @@ function enforce_first_as(int peer_asn) {
 }
 
 function enforce_peer_nexthop(ip addr) {
-  if (bgp_next_hop != addr) then _reject("nexhop doesn't match neighbor address");
+  if (bgp_next_hop != addr) then _reject("nexthop doesn't match neighbor address");
+}
+
+# ---- Filter for OSPF ----
+function ospf_network4() {
+  {{ if .OriginSet4 -}}
+  if (net ~ LOCAL_v4) then accept;
+  {{- end }}
+}
+function ospf_network6() {
+  {{ if .OriginSet6 -}}
+  if (net ~ LOCAL_v6) then accept; 
+  {{- end }}
 }
 
 # ---- Peers ----

@@ -82,8 +82,12 @@ protocol bgp {{ $peer.Name }}v{{ $af }}_{{ $i }} {
                 process_blackholes();
                 {{ end }}
                 accept;
-            }
-            reject;
+
+            {{- else if eq $peer.Type "core" -}}
+                bgp_large_community.add((ASN,0,10)); # Learned from Core Routers
+                if ospf_network{{ $af }}() then reject;
+                accept;
+
             {{- else if eq $peer.Type "import-valid" -}}
             bgp_large_community.add((ASN,0,102)); # Learned from peer
             {{ if $peer.AllowBlackholes }}
@@ -120,6 +124,12 @@ protocol bgp {{ $peer.Name }}v{{ $af }}_{{ $i }} {
             {{ else if or (eq $peer.Type "peer") (eq $peer.Type "import-valid") -}}
             if ((ASN,0,103) ~ bgp_large_community) then accept; # Downstream
             {{ else if eq $peer.Type "downstream" -}}
+            if ((ASN,0,103) ~ bgp_large_community) then accept; # Downstream
+            if ((ASN,0,102) ~ bgp_large_community) then accept; # Peer
+            if ((ASN,0,101) ~ bgp_large_community) then accept; # Upstream
+            {{ else if eq $peer.Type "core" -}}
+            if ospf_network{{ $af }}() then reject;
+            if ((ASN,0,10) ~ bgp_large_community) then accept;  # Core
             if ((ASN,0,103) ~ bgp_large_community) then accept; # Downstream
             if ((ASN,0,102) ~ bgp_large_community) then accept; # Peer
             if ((ASN,0,101) ~ bgp_large_community) then accept; # Upstream
